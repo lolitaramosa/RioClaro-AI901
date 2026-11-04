@@ -1,5 +1,6 @@
 import Navbar from "../components/Navbar";
 import Inventario from "./Inventario";
+import DashboardEjecutivo from "./DashboardEjecutivo";
 
 export default function Dashboard({ usuario }) {
   return (
@@ -12,7 +13,7 @@ export default function Dashboard({ usuario }) {
           padding: "30px",
         }}
       >
-        <Inventario />
+        <DashboardEjecutivo />
       </div>
     </div>
   );
