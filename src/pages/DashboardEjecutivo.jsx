@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { leerExcel } from "../data/excelReader";
+import VentasPorSucursal
+from "../components/VentasPorSucursal";
  
 export default function DashboardEjecutivo() {
  
@@ -49,7 +51,14 @@ setProductosCriticos(inventarioCritico);
 return (
 <div>
  
-<h1>Dashboard Ejecutivo</h1>
+<h1
+  style={{
+    fontSize: "52px",
+    marginBottom: "25px"
+  }}
+>
+  Dashboard Ejecutivo
+</h1>
  
 <div
 style={{
@@ -101,20 +110,37 @@ width: "220px",
 <h2>{facturasPendientes}</h2>
 </div>
  
+<>
 <div
-style={{
-background: "#ea580c",
-color: "white",
-padding: "20px",
-borderRadius: "10px",
-width: "220px",
-}}
+  style={{
+    background: "#ea580c",
+    color: "white",
+    padding: "20px",
+    borderRadius: "10px",
+    width: "220px",
+  }}
 >
-<h3>Productos Críticos</h3>
-<h2>{productosCriticos}</h2>
+  <h3>Productos Críticos</h3>
+  <h2>{productosCriticos}</h2>
 </div>
+
+  <div
+    style={{
+      display: "flex",
+      gap: "20px",
+      flexWrap: "wrap",
+    }}
+  >
+    {/* KPI 1 */}
+    {/* KPI 2 */}
+    {/* KPI 3 */}
+    {/* KPI 4 */}
+  </div>
+
+</>
  
 </div>
+  <VentasPorSucursal />
 </div>
 );
 }
