@@ -10,7 +10,8 @@ import ChatIA from "./ChatIA";
 import PeticionesCompra from "./PeticionesCompra";
 
 export default function Dashboard({
-  usuario
+  usuario,
+  cerrarSesion
 }) {
 
  const obtenerPantallaInicial = () => {
@@ -42,6 +43,7 @@ const [pantalla, setPantalla] =
       <Navbar
         usuario={usuario}
         setPantalla={setPantalla}
+        cerrarSesion={cerrarSesion}
       />
 
       <div

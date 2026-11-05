@@ -1,6 +1,7 @@
 export default function Navbar({
   usuario,
-  setPantalla
+  setPantalla,
+  cerrarSesion
 }) {
 
   const esAdministrativo =
@@ -15,6 +16,7 @@ export default function Navbar({
 
   const esFacturas =
     usuario.rol === "CtasXPagar";
+    
 
   return (
     <div
@@ -39,6 +41,7 @@ export default function Navbar({
           padding: 0,
         }}
       >
+        
 
         {esAdministrativo && (
           <li
@@ -112,8 +115,20 @@ export default function Navbar({
         >
           🤖 Chat IA
         </li>
+<hr />
 
+<li
+  style={{
+    marginTop: "20px",
+    cursor: "pointer",
+    color: "#ff8080"
+  }}
+  onClick={cerrarSesion}
+>
+  🚪 Cerrar Sesión
+</li>
       </ul>
     </div>
   );
+  
 }
