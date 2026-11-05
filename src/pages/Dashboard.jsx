@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import DashboardEjecutivo from "./DashboardEjecutivo";
 import Inventario from "./Inventario";
 import Facturas from "./Facturas";
+import Pedidos from "./Pedidos";
 
 export default function Dashboard({
   usuario
@@ -41,6 +42,11 @@ export default function Dashboard({
         {pantalla === "facturas" && (
           <Facturas />
         )}
+
+        {pantalla === "pedidos" && (
+          <Pedidos />
+        )}
+        
       </div>
     </div>
   );

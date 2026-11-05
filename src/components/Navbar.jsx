@@ -55,7 +55,17 @@ export default function Navbar({
             cursor: "pointer"
           }}
         >
-          🛒 Pedidos
+         <li
+  style={{
+    marginBottom: "15px",
+    cursor: "pointer"
+  }}
+  onClick={() =>
+    setPantalla("pedidos")
+  }
+>
+  🛒 Pedidos
+</li>
         </li>
 
         <li
