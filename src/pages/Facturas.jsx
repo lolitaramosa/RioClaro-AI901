@@ -12,9 +12,35 @@ export default function Facturas() {
 
   const cargarFacturas = async () => {
 
-    const datos = await leerExcel(
-      "/datos/FacturaResumen.xlsx"
-    );
+    const facturasData = await leerExcel(
+  "/datos/FacturaResumen.xlsx"
+);
+
+const proveedoresData = await leerExcel(
+  "/datos/Proveedor.xlsx"
+);
+
+const facturasCompletas =
+  facturasData.map((f) => {
+
+    const proveedor =
+      proveedoresData.find(
+        (p) =>
+          p.ID_Proveedor ==
+          f.ID_Proveedor
+      );
+
+    return {
+      ...f,
+      ProveedorNombre:
+        proveedor?.RazonSocial ||
+        "Proveedor no encontrado",
+    };
+  });
+
+setFacturas(
+  facturasCompletas
+);
 
     setFacturas(datos);
   };
@@ -72,14 +98,16 @@ export default function Facturas() {
                 </td>
 
                 <td>
-                  {f.ID_Proveedor}
+                {f.ProveedorNombre}
                 </td>
 
-                <td>
-                  {String(
-                    f.FechaFactura
-                  )}
-                </td>
+             <td>
+                {new Date(
+                 (f.FechaFactura - 25569)
+                 * 86400
+                * 1000
+                 ).toLocaleDateString()}
+            </td>
 
                 <td>
                   $
