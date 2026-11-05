@@ -1,4 +1,7 @@
-export default function Navbar({ usuario }) {
+export default function Navbar({
+  usuario,
+  setPantalla
+}) {
   return (
     <div
       style={{
@@ -16,13 +19,66 @@ export default function Navbar({ usuario }) {
       <p>{usuario.rol}</p>
       <p>{usuario.nombre}</p>
 
-      <ul style={{ listStyle: "none", padding: 0 }}>
-       <li style={{marginBottom:"15px"}}>📊 Dashboard</li>
-       <li style={{marginBottom:"15px"}}>📦 Inventario</li>
-       <li style={{marginBottom:"15px"}}>🛒 Pedidos</li>
-       <li style={{marginBottom:"15px"}}>📄 Facturas</li>
-       <li style={{marginBottom:"15px"}}>🤖 Chat IA</li>
+      <ul
+        style={{
+          listStyle: "none",
+          padding: 0
+        }}
+      >
+        <li
+          style={{
+            marginBottom: "15px",
+            cursor: "pointer"
+          }}
+          onClick={() =>
+            setPantalla("dashboard")
+          }
+        >
+          📊 Dashboard
+        </li>
+
+        <li
+          style={{
+            marginBottom: "15px",
+            cursor: "pointer"
+          }}
+          onClick={() =>
+            setPantalla("inventario")
+          }
+        >
+          📦 Inventario
+        </li>
+
+        <li
+          style={{
+            marginBottom: "15px",
+            cursor: "pointer"
+          }}
+        >
+          🛒 Pedidos
+        </li>
+
+        <li
+          style={{
+            marginBottom: "15px",
+            cursor: "pointer"
+          }}
+          onClick={() =>
+            setPantalla("facturas")
+          }
+        >
+          📄 Facturas
+        </li>
+
+        <li
+          style={{
+            marginBottom: "15px",
+            cursor: "pointer"
+          }}
+        >
+          🤖 Chat IA
+        </li>
       </ul>
-       </div>
+    </div>
   );
 }

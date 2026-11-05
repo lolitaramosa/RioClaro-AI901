@@ -1,11 +1,28 @@
-import Navbar from "../components/Navbar";
-import Inventario from "./Inventario";
-import DashboardEjecutivo from "./DashboardEjecutivo";
+import { useState } from "react";
 
-export default function Dashboard({ usuario }) {
+import Navbar from "../components/Navbar";
+
+import DashboardEjecutivo from "./DashboardEjecutivo";
+import Inventario from "./Inventario";
+import Facturas from "./Facturas";
+
+export default function Dashboard({
+  usuario
+}) {
+
+  const [pantalla, setPantalla] =
+    useState("dashboard");
+
   return (
-    <div style={{ display: "flex" }}>
-      <Navbar usuario={usuario} />
+    <div
+      style={{
+        display: "flex"
+      }}
+    >
+      <Navbar
+        usuario={usuario}
+        setPantalla={setPantalla}
+      />
 
       <div
         style={{
@@ -13,7 +30,17 @@ export default function Dashboard({ usuario }) {
           padding: "30px",
         }}
       >
-        <DashboardEjecutivo />
+        {pantalla === "dashboard" && (
+          <DashboardEjecutivo />
+        )}
+
+        {pantalla === "inventario" && (
+          <Inventario />
+        )}
+
+        {pantalla === "facturas" && (
+          <Facturas />
+        )}
       </div>
     </div>
   );
