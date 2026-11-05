@@ -2,6 +2,20 @@ export default function Navbar({
   usuario,
   setPantalla
 }) {
+
+  const esAdministrativo =
+    usuario.rol === "Dueño" ||
+    usuario.rol === "Gerencia";
+
+  const esBodega =
+    usuario.rol === "Bodega";
+
+  const esVendedor =
+    usuario.rol === "Vendedor";
+
+  const esFacturas =
+    usuario.rol === "CtasXPagar";
+
   return (
     <div
       style={{
@@ -22,72 +36,82 @@ export default function Navbar({
       <ul
         style={{
           listStyle: "none",
-          padding: 0
+          padding: 0,
         }}
       >
+
+        {esAdministrativo && (
+          <li
+            style={{
+              marginBottom: "15px",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              setPantalla("dashboard")
+            }
+          >
+            📊 Dashboard
+          </li>
+        )}
+
+        {(esAdministrativo ||
+          esBodega ||
+          esVendedor) && (
+          <li
+            style={{
+              marginBottom: "15px",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              setPantalla("inventario")
+            }
+          >
+            📦 Inventario
+          </li>
+        )}
+
+        {(esAdministrativo ||
+          esVendedor) && (
+          <li
+            style={{
+              marginBottom: "15px",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              setPantalla("pedidos")
+            }
+          >
+            🛒 Pedidos
+          </li>
+        )}
+
+        {(esAdministrativo ||
+          esFacturas) && (
+          <li
+            style={{
+              marginBottom: "15px",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              setPantalla("facturas")
+            }
+          >
+            📄 Facturas
+          </li>
+        )}
+
         <li
           style={{
             marginBottom: "15px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
           onClick={() =>
-            setPantalla("dashboard")
+            setPantalla("chat")
           }
-        >
-          📊 Dashboard
-        </li>
-
-        <li
-          style={{
-            marginBottom: "15px",
-            cursor: "pointer"
-          }}
-          onClick={() =>
-            setPantalla("inventario")
-          }
-        >
-          📦 Inventario
-        </li>
-
-        <li
-          style={{
-            marginBottom: "15px",
-            cursor: "pointer"
-          }}
-        >
-         <li
-  style={{
-    marginBottom: "15px",
-    cursor: "pointer"
-  }}
-  onClick={() =>
-    setPantalla("pedidos")
-  }
->
-  🛒 Pedidos
-</li>
-        </li>
-
-        <li
-          style={{
-            marginBottom: "15px",
-            cursor: "pointer"
-          }}
-          onClick={() =>
-            setPantalla("facturas")
-          }
-        >
-          📄 Facturas
-        </li>
-
-        <li
-          style={{
-            marginBottom: "15px",
-            cursor: "pointer"
-          }}
         >
           🤖 Chat IA
         </li>
+
       </ul>
     </div>
   );

@@ -6,6 +6,7 @@ import DashboardEjecutivo from "./DashboardEjecutivo";
 import Inventario from "./Inventario";
 import Facturas from "./Facturas";
 import Pedidos from "./Pedidos";
+import ChatIA from "./ChatIA";
 
 export default function Dashboard({
   usuario
@@ -46,7 +47,11 @@ export default function Dashboard({
         {pantalla === "pedidos" && (
           <Pedidos />
         )}
-        
+  
+        {pantalla === "chat" && (
+            <ChatIA />
+        )}
+
       </div>
     </div>
   );
