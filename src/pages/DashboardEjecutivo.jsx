@@ -52,14 +52,28 @@ return (
 <div>
  
 <h1
-  style={{
-    fontSize: "52px",
-    marginBottom: "25px"
+    style={{
+    textAlign: "center",
+    marginBottom: "10px"
   }}
 >
   Dashboard Ejecutivo
 </h1>
- 
+
+<p
+  style={{
+    textAlign: "center",
+    color: "#64748b",
+    fontSize: "14px",
+    //marginTop: "-10px",
+    marginBottom: "35px",
+    textAlign: "center"
+  }}
+>
+  Última actualización:
+  {" "}
+  {new Date().toLocaleDateString()}
+</p>
 <div
 style={{
 display: "flex",

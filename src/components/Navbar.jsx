@@ -130,5 +130,13 @@ export default function Navbar({
       </ul>
     </div>
   );
-  
+  <p
+  style={{
+    fontSize: "12px",
+    marginTop: "40px",
+    color: "#94a3b8"
+  }}
+>
+  Río Claro v1.0
+</p>
 }

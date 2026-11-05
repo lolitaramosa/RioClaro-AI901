@@ -8,14 +8,44 @@ export default function ChatIA() {
   const [respuesta, setRespuesta] =
     useState("");
 
-  const enviarPregunta = () => {
+  const enviarPregunta = async () => {
 
-    if (!pregunta) return;
+  if (!pregunta) return;
+
+  try {
+
+    setRespuesta("Consultando IA...");
+
+    const response = await fetch(
+      "https://rioclaro-chat-dra-api-c7bug9bwbxe7azh4.mexicocentral-01.azurewebsites.net/api/chat",
+        {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify({
+          pregunta
+        })
+      }
+    );
+   const data =
+      await response.json();
 
     setRespuesta(
-      "El asistente Río Claro está configurado en Azure AI Foundry con GPT-4.1-mini. La integración mediante API será la siguiente fase del proyecto."
+      data.respuesta
     );
-  };
+
+  } catch (error) {
+
+    setRespuesta(
+      "Error al consultar Azure OpenAI"
+    );
+
+  }
+};
 
   return (
     <div>
@@ -64,14 +94,16 @@ export default function ChatIA() {
       <h3>Respuesta</h3>
 
       <div
-        style={{
-          border: "1px solid lightgray",
-          padding: "15px",
-          borderRadius: "10px"
-        }}
-      >
-        {respuesta}
-      </div>
+    style={{
+    backgroundColor: "#f8fafc",
+    border: "1px solid #cbd5e1",
+    padding: "15px",
+    borderRadius: "10px",
+    minHeight: "80px"
+  }}
+>
+  {respuesta}
+</div>
 
     </div>
   );
