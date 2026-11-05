@@ -12,8 +12,25 @@ export default function Dashboard({
   usuario
 }) {
 
-  const [pantalla, setPantalla] =
-    useState("dashboard");
+ const obtenerPantallaInicial = () => {
+
+  if (usuario.rol === "Bodega") {
+    return "inventario";
+  }
+
+  if (usuario.rol === "Vendedor") {
+    return "pedidos";
+  }
+
+  if (usuario.rol === "CtasXPagar") {
+    return "facturas";
+  }
+
+  return "dashboard";
+};
+
+const [pantalla, setPantalla] =
+  useState(obtenerPantallaInicial());
 
   return (
     <div
