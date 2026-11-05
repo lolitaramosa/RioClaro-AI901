@@ -7,6 +7,7 @@ import Inventario from "./Inventario";
 import Facturas from "./Facturas";
 import Pedidos from "./Pedidos";
 import ChatIA from "./ChatIA";
+import PeticionesCompra from "./PeticionesCompra";
 
 export default function Dashboard({
   usuario
@@ -68,6 +69,11 @@ const [pantalla, setPantalla] =
         {pantalla === "chat" && (
             <ChatIA />
         )}
+        {
+       pantalla === "peticiones" && (
+        <PeticionesCompra />
+        )
+      }
 
       </div>
     </div>

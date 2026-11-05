@@ -54,21 +54,22 @@ export default function Navbar({
           </li>
         )}
 
-        {(esAdministrativo ||
-          esBodega ||
-          esVendedor) && (
-          <li
-            style={{
-              marginBottom: "15px",
-              cursor: "pointer",
-            }}
-            onClick={() =>
-              setPantalla("inventario")
-            }
-          >
-            📦 Inventario
-          </li>
-        )}
+{
+  (esAdministrativo ||
+    esBodega) && (
+    <li
+      style={{
+        marginBottom: "15px",
+        cursor: "pointer",
+      }}
+      onClick={() =>
+        setPantalla("peticiones")
+      }
+    >
+      📋 Peticiones Compra
+    </li>
+  )
+}
 
         {(esAdministrativo ||
           esVendedor) && (
