@@ -1,109 +1,131 @@
 import { useEffect, useState } from "react";
 import { leerExcel } from "../data/excelReader";
- 
+
 export default function Inventario() {
-const [datos, setDatos] = useState([]);
-const [soloCriticos, setSoloCriticos] = useState(false);
-const [error, setError] = useState("");
- 
-useEffect(() => {
-cargarDatos();
-}, []);
- 
-const cargarDatos = async () => {
+  const [datos, setDatos] = useState([]);
+  const [soloCriticos, setSoloCriticos] = useState(false);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
-  const existencias = await leerExcel(
-    "/datos/ProductoExistencia.xlsx"
-  );
+  useEffect(() => {
+    let activo = true;
 
-  const productos = await leerExcel(
-    "/datos/Producto.xlsx"
-  );
+    const cargarDatos = async () => {
+      try {
+        const [existencias, productos, sucursales] = await Promise.all([
+          leerExcel("/datos/ProductoExistencia.xlsx"),
+          leerExcel("/datos/Producto.xlsx"),
+          leerExcel("/datos/Sucursal.xlsx"),
+        ]);
+        if (!activo) return;
 
-  const sucursales = await leerExcel(
-    "/datos/Sucursal.xlsx"
-  );
+        const datosCombinados = existencias.map((existencia) => {
+          const producto = productos.find(
+            (elemento) =>
+              String(elemento.ID_Producto) === String(existencia.ID_producto),
+          );
+          const sucursal = sucursales.find(
+            (elemento) =>
+              String(elemento["ID_sucursal "]) ===
+              String(existencia["ID_sucursal "]),
+          );
 
-  // LIMPIAR COLUMNAS DE SUCURSALES
-  const sucursalesLimpias = sucursales.map(s => ({
-    ID_sucursal: s["ID_sucursal "],
-    nombre_sucursal: s.nombre_sucursal
-  }));
+          return {
+            id: existencia.ID_producto_existencia,
+            producto: producto?.NombreProducto || "No encontrado",
+            sucursal: sucursal?.nombre_sucursal || "No encontrada",
+            existencia: Number(existencia.Existencia || 0),
+          };
+        });
 
-  const datosCombinados = existencias.map((e) => {
-
-    const producto = productos.find(
-      (p) => p.ID_Producto == e.ID_producto
-    );
-
-    const sucursal = sucursalesLimpias.find(
-      (s) => s.ID_sucursal == e["ID_sucursal "]
-    );
-
-    return {
-      id: e.ID_producto_existencia,
-
-      producto:
-        producto?.NombreProducto || "No encontrado",
-
-      sucursal:
-        sucursal?.nombre_sucursal || "No encontrada",
-
-      existencia: e.Existencia,
+        setDatos(datosCombinados);
+      } catch {
+        if (activo) setError("No fue posible cargar el inventario.");
+      } finally {
+        if (activo) setCargando(false);
+      }
     };
-  });
 
-  setDatos(datosCombinados);
-};
-const datosFiltrados = soloCriticos
-  ? datos.filter((d) => d.existencia <= 10)
-  : datos; 
+    cargarDatos();
+    return () => {
+      activo = false;
+    };
+  }, []);
 
-return (
-<div>
-<h2>Inventario</h2>
- 
-{error && (
-<div style={{ color: "red" }}>
-Error: {error}
-</div>
-)}
- 
-<p>
-Registros encontrados: {datos.length}
-</p>
-<label>
-  <input
-    type="checkbox"
-    checked={soloCriticos}
-    onChange={() =>
-      setSoloCriticos(!soloCriticos)
-    }
-  />
-  {"Mostrar inventario crítico (<=10)"}
-</label>
- 
-<table border="1" cellPadding="8">
-<thead>
-<tr>
-<th>ID</th>
-<th>Nombre Producto</th>
-<th>Sucursal</th>
-<th>Existencia</th>
-</tr>
-</thead>
- 
-<tbody>
-  {datosFiltrados.map((item, index) => (
-    <tr key={index}>
-      <td>{item.id}</td>
-      <td>{item.producto}</td>
-      <td>{item.sucursal}</td>
-      <td>{item.existencia}</td>
-    </tr>
-  ))}
-</tbody>
-</table>
-</div>
-);
+  const datosFiltrados = soloCriticos
+    ? datos.filter((dato) => dato.existencia <= 10)
+    : datos;
+
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">Existencias</div>
+          <h1>Inventario</h1>
+          <p className="page-description">
+            Consulta las existencias disponibles en cada sucursal.
+          </p>
+        </div>
+      </div>
+
+      {error && <div className="error-state" role="alert">{error}</div>}
+
+      <section className="table-card">
+        <div className="table-toolbar">
+          <p>
+            <strong>{cargando ? "…" : datosFiltrados.length}</strong>{" "}
+            {datosFiltrados.length === 1 ? "registro" : "registros"}
+          </p>
+          <label className="filter-check">
+            <input
+              type="checkbox"
+              checked={soloCriticos}
+              onChange={(event) => setSoloCriticos(event.target.checked)}
+            />
+            Mostrar inventario crítico (10 unidades o menos)
+          </label>
+        </div>
+
+        {cargando ? (
+          <div className="empty-state" aria-live="polite">Cargando inventario…</div>
+        ) : datosFiltrados.length === 0 ? (
+          <div className="empty-state">
+            {soloCriticos
+              ? "No hay productos con existencias críticas."
+              : "No hay registros de inventario para mostrar."}
+          </div>
+        ) : (
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Producto</th>
+                  <th>Sucursal</th>
+                  <th>Existencia</th>
+                </tr>
+              </thead>
+              <tbody>
+                {datosFiltrados.map((dato, index) => (
+                  <tr key={dato.id ?? index}>
+                    <td>{dato.id}</td>
+                    <td>{dato.producto}</td>
+                    <td>{dato.sucursal}</td>
+                    <td>
+                      <span
+                        className={`status-pill${dato.existencia <= 10 ? " critical-stock" : ""}`}
+                        data-status={dato.existencia <= 10 ? "crítico" : "completado"}
+                      >
+                        {dato.existencia}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </>
+  );
 }

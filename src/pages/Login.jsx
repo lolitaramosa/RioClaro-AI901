@@ -3,6 +3,7 @@ import { useState } from "react";
 export default function Login({ onLogin }) {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const usuarios = {
     admin: "Dueño",
@@ -12,102 +13,107 @@ export default function Login({ onLogin }) {
     ctasxpagar: "CtasXPagar",
   };
 
-  const ingresar = () => {
+  const ingresar = (event) => {
+    event.preventDefault();
+    const nombreUsuario = usuario.trim().toLowerCase();
+
     if (password !== "Azure123*") {
-      alert("Contraseña incorrecta");
+      setError("La contraseña no es correcta. Inténtalo de nuevo.");
       return;
     }
 
-    const rol = usuarios[usuario];
-
+    const rol = usuarios[nombreUsuario];
     if (!rol) {
-      alert("Usuario no válido");
+      setError("No encontramos ese usuario. Verifica e inténtalo de nuevo.");
       return;
     }
 
-    onLogin({
-      nombre: usuario,
-      rol,
-    });
+    setError("");
+    onLogin({ nombre: nombreUsuario, rol });
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f5f5f5",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          padding: "30px",
-          width: "350px",
-          borderRadius: "12px",
-        }}
-      >
-        <h2>Distribuidora Río Claro</h2>
+    <main className="login-page">
+      <section className="login-brand-panel" aria-label="Distribuidora Río Claro">
+        <div className="login-brand">
+          <div className="brand-mark" aria-hidden="true">RC</div>
+          <div className="brand-copy">
+            <strong>Río Claro</strong>
+            <span>Distribuidora · Portal</span>
+          </div>
+        </div>
 
-        <input
-          placeholder="Usuario"
-          value={usuario}
-          onChange={(e) => setUsuario(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        />
+        <div className="login-message">
+          <div className="eyebrow">Una operación más clara</div>
+          <h1>Todo tu negocio, en un solo lugar.</h1>
+          <p>
+            Consulta pedidos, inventario y facturas desde una experiencia
+            sencilla, segura y diseñada para tu equipo.
+          </p>
+        </div>
 
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "10px",
-          }}
-        />
+        <div className="login-footer">© Río Claro · Portal interno</div>
+      </section>
 
-        <button
-          style={{
-            width: "100%",
-            padding: "10px",
-            background: "#2563eb",
-            color: "white",
-            border: "none",
-          }}
-          onClick={ingresar}
-        >
-          Ingresar
-        </button>
+      <section className="login-form-panel">
+        <form className="login-form" onSubmit={ingresar}>
+          <div className="eyebrow">Bienvenido de nuevo</div>
+          <h2>Iniciar sesión</h2>
+          <p>Ingresa tus datos para acceder al portal.</p>
 
-        <hr />
+          {error && (
+            <div className="login-error" role="alert">
+              {error}
+            </div>
+          )}
 
-        <small>
-          Usuarios:
-          <br />
-          admin
-          <br />
-          gerencia
-          <br />
-          vendedor
-          <br />
-          bodega
-          <br />
-          ctasxpagar
-          <br />
-          <br />
-          Contraseña:
-          <br />
-          Azure123*
-        </small>
-      </div>
-    </div>
+          <div className="field">
+            <label htmlFor="usuario">Usuario</label>
+            <input
+              id="usuario"
+              name="username"
+              autoComplete="username"
+              placeholder="Escribe tu usuario"
+              value={usuario}
+              onChange={(event) => setUsuario(event.target.value)}
+              aria-invalid={Boolean(error)}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="password">Contraseña</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Escribe tu contraseña"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              aria-invalid={Boolean(error)}
+            />
+          </div>
+
+          <button className="button-primary login-submit" type="submit">
+            Entrar al portal
+          </button>
+
+          <div className="demo-access">
+            <strong>Credenciales de demostración</strong>
+            <span>Usuarios disponibles:</span>
+            <ul>
+              {Object.keys(usuarios).map((nombre) => (
+                <li key={nombre}>
+                  <code>{nombre}</code>
+                </li>
+              ))}
+            </ul>
+            <span>
+              Contraseña para todos: <code>Azure123*</code>
+            </span>
+          </div>
+        </form>
+      </section>
+    </main>
   );
 }

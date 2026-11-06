@@ -1,125 +1,117 @@
 import { useEffect, useState } from "react";
 import { leerExcel } from "../data/excelReader";
 
-export default function Pedidos() {
+const moneda = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+  maximumFractionDigits: 0,
+});
 
+export default function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    let activo = true;
+
+    const cargarPedidos = async () => {
+      try {
+        const [pedidosData, clientesData, sucursalesData] = await Promise.all([
+          leerExcel("/datos/Pedido.xlsx"),
+          leerExcel("/datos/Cliente.xlsx"),
+          leerExcel("/datos/Sucursal.xlsx"),
+        ]);
+        if (!activo) return;
+
+        setPedidos(
+          pedidosData.map((pedido) => {
+            const cliente = clientesData.find(
+              (elemento) =>
+                String(elemento.ID_Cliente) === String(pedido.ID_Cliente),
+            );
+            const sucursal = sucursalesData.find(
+              (elemento) =>
+                String(elemento["ID_sucursal "]) === String(pedido.ID_Sucursal),
+            );
+
+            return {
+              ...pedido,
+              ClienteNombre: cliente?.RazonSocial || "Cliente no encontrado",
+              SucursalNombre: sucursal?.nombre_sucursal || "Sucursal no encontrada",
+            };
+          }),
+        );
+      } catch {
+        if (activo) setError("No fue posible cargar los pedidos.");
+      } finally {
+        if (activo) setCargando(false);
+      }
+    };
+
     cargarPedidos();
+    return () => {
+      activo = false;
+    };
   }, []);
 
-  const cargarPedidos = async () => {
-
-    const pedidosData = await leerExcel(
-      "/datos/Pedido.xlsx"
-    );
-
-    const clientesData = await leerExcel(
-      "/datos/Cliente.xlsx"
-    );
-
-    const sucursalesData = await leerExcel(
-      "/datos/Sucursal.xlsx"
-    );
-
-    const pedidosCompletos =
-      pedidosData.map((p) => {
-
-        const cliente =
-          clientesData.find(
-            (c) =>
-              c.ID_Cliente ==
-              p.ID_Cliente
-          );
-
-        const sucursal =
-          sucursalesData.find(
-            (s) =>
-              s["ID_sucursal "] ==
-              p.ID_Sucursal
-          );
-
-        return {
-          ...p,
-
-          ClienteNombre:
-            cliente?.RazonSocial ||
-            "Cliente no encontrado",
-
-          SucursalNombre:
-            sucursal?.nombre_sucursal ||
-            "Sucursal no encontrada",
-        };
-      });
-
-    setPedidos(
-      pedidosCompletos
-    );
-  };
-
   return (
-    <div>
+    <>
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">Operación</div>
+          <h1>Pedidos</h1>
+          <p className="page-description">Consulta los pedidos y su información principal.</p>
+        </div>
+      </div>
 
-      <h1>Pedidos</h1>
+      {error && <div className="error-state" role="alert">{error}</div>}
 
-      <p>
-        Pedidos encontrados:
-        {pedidos.length}
-      </p>
-
-      <table
-        border="1"
-        cellPadding="8"
-      >
-        <thead>
-          <tr>
-            <th>ID Pedido</th>
-            <th>Cliente</th>
-            <th>Sucursal</th>
-            <th>Monto</th>
-            <th>Estatus</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          {pedidos.map(
-            (p, index) => (
-
-              <tr key={index}>
-
-                <td>
-                  {p.ID_Pedido}
-                </td>
-
-                <td>
-                  {p.ClienteNombre}
-                </td>
-
-                <td>
-                  {p.SucursalNombre}
-                </td>
-
-                <td>
-                  $
-                  {Number(
-                    p.MontoTotal
-                  ).toLocaleString()}
-                </td>
-
-                <td>
-                  {p.Estatus}
-                </td>
-
-              </tr>
-            )
-          )}
-
-        </tbody>
-
-      </table>
-
-    </div>
+      <section className="table-card">
+        <div className="table-toolbar">
+          <p>
+            <strong>{cargando ? "…" : pedidos.length}</strong>{" "}
+            {pedidos.length === 1 ? "pedido registrado" : "pedidos registrados"}
+          </p>
+        </div>
+        {cargando ? (
+          <div className="empty-state" aria-live="polite">Cargando pedidos…</div>
+        ) : pedidos.length === 0 ? (
+          <div className="empty-state">No hay pedidos para mostrar.</div>
+        ) : (
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>ID pedido</th>
+                  <th>Cliente</th>
+                  <th>Sucursal</th>
+                  <th>Monto</th>
+                  <th>Estatus</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pedidos.map((pedido, index) => (
+                  <tr key={pedido.ID_Pedido ?? index}>
+                    <td>{pedido.ID_Pedido}</td>
+                    <td>{pedido.ClienteNombre}</td>
+                    <td>{pedido.SucursalNombre}</td>
+                    <td>{moneda.format(Number(pedido.MontoTotal || 0))}</td>
+                    <td>
+                      <span
+                        className="status-pill"
+                        data-status={String(pedido.Estatus || "").toLowerCase()}
+                      >
+                        {pedido.Estatus || "Sin estatus"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </>
   );
 }

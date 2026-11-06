@@ -1,110 +1,92 @@
 import { useState } from "react";
 
 export default function ChatIA() {
+  const [pregunta, setPregunta] = useState("");
+  const [respuesta, setRespuesta] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
 
-  const [pregunta, setPregunta] =
-    useState("");
+  const enviarPregunta = async (event) => {
+    event.preventDefault();
+    const texto = pregunta.trim();
+    if (!texto || cargando) return;
 
-  const [respuesta, setRespuesta] =
-    useState("");
+    setCargando(true);
+    setError("");
+    setRespuesta("");
 
-  const enviarPregunta = async () => {
-
-  if (!pregunta) return;
-
-  try {
-
-    setRespuesta("Consultando IA...");
-
-    const response = await fetch(
-      "https://rioclaro-chat-dra-api-c7bug9bwbxe7azh4.mexicocentral-01.azurewebsites.net/api/chat",
+    try {
+      const response = await fetch(
+        "https://rioclaro-chat-dra-api-c7bug9bwbxe7azh4.mexicocentral-01.azurewebsites.net/api/chat",
         {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json"
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pregunta: texto }),
         },
+      );
 
-        body: JSON.stringify({
-          pregunta
-        })
+      if (!response.ok) {
+        throw new Error(`La solicitud terminó con el estado ${response.status}.`);
       }
-    );
-   const data =
-      await response.json();
 
-    setRespuesta(
-      data.respuesta
-    );
+      const data = await response.json();
+      if (typeof data.respuesta !== "string" || !data.respuesta.trim()) {
+        throw new Error("La respuesta del servicio no tiene el formato esperado.");
+      }
 
-  } catch (error) {
-
-    setRespuesta(
-      "Error al consultar Azure OpenAI"
-    );
-
-  }
-};
+      setRespuesta(data.respuesta);
+    } catch {
+      setError("No pudimos consultar al asistente. Intenta de nuevo en unos momentos.");
+    } finally {
+      setCargando(false);
+    }
+  };
 
   return (
-    <div>
+    <section className="chat-card">
+      <header className="chat-card-header">
+        <div className="ai-mark" aria-hidden="true">IA</div>
+        <div>
+          <h1>Asistente inteligente Río Claro</h1>
+          <p>Microsoft Foundry · GPT-4.1-mini</p>
+        </div>
+      </header>
 
-      <h1>
-        Asistente Inteligente Río Claro
-      </h1>
+      <div className="chat-body">
+        <form onSubmit={enviarPregunta}>
+          <label className="chat-label" htmlFor="pregunta">
+            ¿En qué te puedo ayudar?
+          </label>
+          <textarea
+            id="pregunta"
+            className="chat-input"
+            placeholder="Escribe tu pregunta sobre la operación de Río Claro…"
+            value={pregunta}
+            onChange={(event) => setPregunta(event.target.value)}
+            disabled={cargando}
+          />
+          <div className="chat-actions">
+            <button
+              className="button-primary"
+              type="submit"
+              disabled={cargando || !pregunta.trim()}
+            >
+              {cargando ? "Consultando…" : "Consultar asistente"}
+            </button>
+          </div>
+        </form>
 
-      <p>
-        Plataforma:
-        Microsoft Foundry
-      </p>
+        {error && <div className="error-state" role="alert">{error}</div>}
 
-      <p>
-        Modelo:
-        GPT‑4.1‑mini
-      </p>
-
-      <hr />
-
-      <textarea
-        rows="5"
-        style={{
-          width: "100%"
-        }}
-        placeholder="Escribe una pregunta..."
-        value={pregunta}
-        onChange={(e) =>
-          setPregunta(
-            e.target.value
-          )
-        }
-      />
-
-      <br />
-      <br />
-
-      <button
-        onClick={enviarPregunta}
-      >
-        Consultar IA
-      </button>
-
-      <hr />
-
-      <h3>Respuesta</h3>
-
-      <div
-    style={{
-    backgroundColor: "#f8fafc",
-    border: "1px solid #cbd5e1",
-    padding: "15px",
-    borderRadius: "10px",
-    minHeight: "80px"
-  }}
->
-  {respuesta}
-</div>
-
-    </div>
+        <section className="chat-response" aria-live="polite">
+          <h2>Respuesta</h2>
+          <p>
+            {cargando
+              ? "El asistente está preparando una respuesta…"
+              : respuesta || "Cuando envíes una pregunta, la respuesta aparecerá aquí."}
+          </p>
+        </section>
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { leerExcel } from "../data/excelReader";
-
 import {
   BarChart,
   Bar,
@@ -8,96 +7,114 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 
-export default function VentasPorSucursal() {
+const moneda = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+  maximumFractionDigits: 0,
+});
 
+export default function VentasPorSucursal() {
   const [datos, setDatos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    let activo = true;
+
+    const cargarDatos = async () => {
+      try {
+        const [pedidos, sucursales] = await Promise.all([
+          leerExcel("/datos/Pedido.xlsx"),
+          leerExcel("/datos/Sucursal.xlsx"),
+        ]);
+        if (!activo) return;
+
+        const ventasPorSucursal = {};
+        pedidos.forEach((pedido) => {
+          const sucursal = sucursales.find(
+            (elemento) =>
+              String(elemento["ID_sucursal "]) === String(pedido.ID_Sucursal),
+          );
+          const nombre = sucursal?.nombre_sucursal || "Sin nombre";
+          ventasPorSucursal[nombre] =
+            (ventasPorSucursal[nombre] || 0) + Number(pedido.MontoTotal || 0);
+        });
+
+        setDatos(
+          Object.entries(ventasPorSucursal).map(([nombre, ventas]) => ({
+            nombre,
+            ventas,
+          })),
+        );
+      } catch {
+        if (activo) setError("No fue posible cargar las ventas por sucursal.");
+      } finally {
+        if (activo) setCargando(false);
+      }
+    };
+
     cargarDatos();
+    return () => {
+      activo = false;
+    };
   }, []);
 
-  const cargarDatos = async () => {
-
-    const pedidos = await leerExcel(
-      "/datos/Pedido.xlsx"
-    );
-
-    const sucursales = await leerExcel(
-      "/datos/Sucursal.xlsx"
-    );
-
-    const ventasPorSucursal = {};
-
-    pedidos.forEach((pedido) => {
-
-      const sucursal = sucursales.find(
-        (s) =>
-          s["ID_sucursal "] ==
-          pedido.ID_Sucursal
-      );
-
-      const nombre =
-        sucursal?.nombre_sucursal ||
-        "Sin nombre";
-
-      ventasPorSucursal[nombre] =
-        (ventasPorSucursal[nombre] || 0) +
-        Number(pedido.MontoTotal);
-    });
-
-    const resultado =
-      Object.entries(
-        ventasPorSucursal
-      ).map(([nombre, ventas]) => ({
-        nombre,
-        ventas
-      }));
-
-    setDatos(resultado);
-  };
-
   return (
-    <div
-    style={{
-      marginTop: "30px",
-      background: "white",
-      padding: "20px",
-      borderRadius: "10px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    }}
-  >
-      <h2>
-        Ventas por Sucursal
-      </h2>
+    <section className="panel">
+      <div className="panel-heading">
+        <div>
+          <h2>Ventas por sucursal</h2>
+          <p>Distribución del monto registrado en pedidos.</p>
+        </div>
+      </div>
 
-     <ResponsiveContainer
-        width="100%"
-        height={450}
-    >
-        <BarChart data={datos}>
-          <CartesianGrid strokeDasharray="3 3" />
-
-          <XAxis
-            dataKey="nombre"
-            angle={-20}
-            textAnchor="end"
-            interval={0}
-             height={90}
-        />
-
-          <YAxis />
-
-          <Tooltip />
-
-          <Bar
-            dataKey="ventas"
-            fill="#2563eb"
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+      {error ? (
+        <div className="error-state" role="alert">{error}</div>
+      ) : cargando ? (
+        <div className="empty-state" aria-live="polite">Cargando ventas…</div>
+      ) : datos.length === 0 ? (
+        <div className="empty-state">No hay ventas disponibles para mostrar.</div>
+      ) : (
+        <div className="chart-wrap">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={datos}
+              margin={{ top: 8, right: 12, bottom: 8, left: 8 }}
+              barCategoryGap="35%"
+            >
+              <CartesianGrid stroke="#edf1f5" vertical={false} />
+              <XAxis
+                dataKey="nombre"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#78879a", fontSize: 11 }}
+                tickMargin={12}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#78879a", fontSize: 10 }}
+                tickFormatter={(value) => `$${Number(value).toLocaleString("es-MX")}`}
+                width={75}
+              />
+              <Tooltip
+                cursor={{ fill: "#f5f8fa" }}
+                formatter={(value) => [moneda.format(Number(value)), "Ventas"]}
+                contentStyle={{
+                  border: "1px solid #e6ebf0",
+                  borderRadius: 9,
+                  boxShadow: "0 8px 24px rgb(28 43 60 / 10%)",
+                  fontSize: 12,
+                }}
+              />
+              <Bar dataKey="ventas" fill="#168f88" radius={[5, 5, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </section>
   );
 }
