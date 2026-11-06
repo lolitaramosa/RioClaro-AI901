@@ -1,8 +1,11 @@
-
+import json
 import azure.functions as func
-import logging
+
+from azure.identity import DefaultAzureCredential
+from azure.ai.projects import AIProjectClient
 
 app = func.FunctionApp()
+
 
 @app.route(
     route="ping",
@@ -16,23 +19,50 @@ def ping(req: func.HttpRequest) -> func.HttpResponse:
         status_code=200
     )
 
-@app.route(route="chatagent2", auth_level=func.AuthLevel.ANONYMOUS)
+
+@app.route(
+    route="chatagent2",
+    methods=["POST"],
+    auth_level=func.AuthLevel.ANONYMOUS
+)
 def chatagent2(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+    try:
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
+        credential = DefaultAzureCredential()
+
+        project_client = AIProjectClient(
+            endpoint=(
+                "https://rioclaro-ai901-dra-resource.services.ai.azure.com"
+                "/api/projects/RioClaro-AI901-DRA"
+            ),
+            credential=credential
+        )
+
+        resultado = {
+            "agents_methods": dir(
+                project_client.beta.agents
+            )
+        }
+
         return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
+            json.dumps(
+                resultado,
+                default=str
+            ),
+            status_code=200,
+            mimetype="application/json"
+        )
+
+    except Exception as ex:
+
+        resultado = {
+            "error": str(ex),
+            "tipo": type(ex).__name__
+        }
+
+        return func.HttpResponse(
+            json.dumps(resultado),
+            status_code=500,
+            mimetype="application/json"
         )
