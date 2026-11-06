@@ -52,10 +52,11 @@ def _byok_provider() -> tuple[ProviderConfig | None, str | None]:
     if not endpoint or not model:
         return None, None
 
-    from azure.identity import DefaultAzureCredential
-    token = DefaultAzureCredential().get_token(
-        "https://ai.azure.com/.default"
-    ).token
+    from azure.identity import AzureCliCredential
+    credential = AzureCliCredential()
+    token = credential.get_token(
+    "https://ai.azure.com/.default"
+     ).token
 
     provider = ProviderConfig(
         type="azure",
