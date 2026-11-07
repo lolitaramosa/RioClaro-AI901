@@ -629,6 +629,40 @@
   font-weight: 650;
 }
 
+.chat-response-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chat-response-heading h2 {
+  margin-bottom: 10px;
+}
+
+.button-secondary {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: #536274;
+  background: #fff;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.button-secondary:hover:not(:disabled) {
+  border-color: #b7d8d4;
+  color: var(--teal-dark);
+  background: #f5fbfa;
+}
+
+.button-secondary:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .chat-response p {
   color: #526276;
   font-size: 13px;

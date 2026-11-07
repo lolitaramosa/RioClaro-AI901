@@ -55,7 +55,7 @@ export default function Dashboard({ usuario, cerrarSesion }) {
           {pantalla === "inventario" && <Inventario />}
           {pantalla === "facturas" && <Facturas />}
           {pantalla === "pedidos" && <Pedidos />}
-          {pantalla === "chat" && <ChatIA />}
+          {pantalla === "chat" && <ChatIA usuario={usuario} />}
           {pantalla === "peticiones" && <PeticionesCompra />}
         </div>
       </main>

@@ -1,10 +1,12 @@
 import { useState } from "react";
 
-export default function ChatIA() {
+export default function ChatIA({ usuario }) {
   const [pregunta, setPregunta] = useState("");
   const [respuesta, setRespuesta] = useState("");
+  const [responseId, setResponseId] = useState("");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
+  const chatEndpoint = import.meta.env.VITE_CHAT_API_URL || "/api/chat";
 
   const enviarPregunta = async (event) => {
     event.preventDefault();
@@ -16,30 +18,45 @@ export default function ChatIA() {
     setRespuesta("");
 
     try {
-      const response = await fetch(
-        "https://rioclaro-chat-dra-api-c7bug9bwbxe7azh4.mexicocentral-01.azurewebsites.net/api/chat",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pregunta: texto }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`La solicitud terminó con el estado ${response.status}.`);
-      }
+      const response = await fetch(chatEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pregunta: texto,
+          rol: usuario.rol,
+          ...(responseId ? { previousResponseId: responseId } : {}),
+        }),
+      });
 
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `La solicitud terminó con el estado ${response.status}.`);
+      }
+
       if (typeof data.respuesta !== "string" || !data.respuesta.trim()) {
         throw new Error("La respuesta del servicio no tiene el formato esperado.");
       }
 
       setRespuesta(data.respuesta);
-    } catch {
-      setError("No pudimos consultar al asistente. Intenta de nuevo en unos momentos.");
+      setResponseId(typeof data.responseId === "string" ? data.responseId : "");
+      setPregunta("");
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No pudimos consultar al asistente. Intenta de nuevo en unos momentos.",
+      );
     } finally {
       setCargando(false);
     }
+  };
+
+  const iniciarNuevaConversacion = () => {
+    setPregunta("");
+    setRespuesta("");
+    setResponseId("");
+    setError("");
   };
 
   return (
@@ -79,7 +96,19 @@ export default function ChatIA() {
         {error && <div className="error-state" role="alert">{error}</div>}
 
         <section className="chat-response" aria-live="polite">
-          <h2>Respuesta</h2>
+          <div className="chat-response-heading">
+            <h2>Respuesta</h2>
+            {responseId && (
+              <button
+                className="button-secondary"
+                type="button"
+                onClick={iniciarNuevaConversacion}
+                disabled={cargando}
+              >
+                Nueva conversación
+              </button>
+            )}
+          </div>
           <p>
             {cargando
               ? "El asistente está preparando una respuesta…"
